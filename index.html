@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ashab Ahsan Chowdhury | ASCII Terminal Portfolio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        termgreen: '#00ff66',
+                        termgreenDim: '#00b347',
+                        termcyan: '#00e5ff',
+                        termamber: '#ffb000',
+                        termdark: '#000000',
+                        termcard: '#080808',
+                        termborder: '#1f2937'
+                    },
+                    fontFamily: {
+                        mono: ['JetBrains Mono', 'Courier New', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #000000;
+            color: #d1d5db;
+            font-family: 'JetBrains Mono', monospace;
+            background-image: radial-gradient(rgba(0, 255, 102, 0.03) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+
+        .cursor-blink {
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .page-view {
+            display: none;
+        }
+        .page-view.active {
+            display: block;
+        }
+
+        /* ASCII Border & Banner Utility Helpers with Fluid Responsive Scaling */
+        .ascii-border-line {
+            white-space: nowrap;
+            overflow: hidden;
+            user-select: none;
+            letter-spacing: -0.5px;
+            font-size: clamp(7.5px, 1.6vw, 12px);
+            line-height: 1;
+        }
+
+        .ascii-banner-pre {
+            font-size: clamp(4px, 1.85vw, 15px);
+            line-height: 1.05;
+            letter-spacing: -0.3px;
+        }
+
+        /* Custom Scrollbar for Terminal aesthetic */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000000;
+            border-left: 1px solid #1f2937;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #111827;
+            border: 1px solid #00ff66;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00ff66;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-black text-slate-300 font-mono selection:bg-termgreen selection:text-black relative overflow-x-hidden">
+
+    <!-- TOP TERMINAL BAR (ASCII FRAMED & STICKY SOLID OPAQUE BLACK) -->
+    <header class="sticky top-0 z-50 bg-black opacity-100">
+        <!-- ASCII Frame Top Line -->
+        <div class="max-w-6xl mx-auto px-4 text-neutral-800 text-xs overflow-hidden select-none bg-black">
+            +================================================================================================================================================+
+        </div>
+
+        <!-- Window Title Bar -->
+        <div class="max-w-6xl mx-auto px-4 py-1.5 flex items-center justify-between text-xs text-neutral-400 bg-black">
+            <div class="flex items-center gap-2">
+                <span class="text-termgreen font-bold">|</span>
+                <span class="w-3 h-3 rounded-full bg-red-600 inline-block"></span>
+                <span class="w-3 h-3 rounded-full bg-yellow-600 inline-block"></span>
+                <span class="w-3 h-3 rounded-full bg-green-600 inline-block"></span>
+                <span id="term-breadcrumb" class="ml-2 font-mono text-neutral-400 text-xs sm:text-sm">root@portfolio:~ (tty1)</span>
+            </div>
+            <div class="hidden sm:flex items-center gap-4 text-xs">
+                <span>[MODE: ASCII_TUI]</span>
+                <span class="text-termgreen">SYS_STATUS: ONLINE</span>
+                <span class="text-termgreen font-bold">|</span>
+            </div>
+        </div>
+
+        <!-- ASCII Frame Divider Line -->
+        <div class="max-w-6xl mx-auto px-4 text-neutral-800 text-xs overflow-hidden select-none bg-black">
+            +------------------------------------------------------------------------------------------------------------------------------------------------+
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="max-w-6xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 bg-black">
+            <div class="flex items-center gap-2">
+                <span class="text-termgreen font-bold">| [$]</span>
+                <span class="text-white font-bold tracking-tight">PORTFOLIO_TERMINAL</span>
+            </div>
+
+            <!-- TUI Menu Buttons -->
+            <nav class="flex flex-wrap items-center gap-2 text-xs sm:text-sm pr-2">
+                <button type="button" onclick="navigateTo('home')" id="nav-home" class="nav-btn px-3 py-1 bg-black text-termgreen font-bold transition-all">
+                    [1] ./about.sh
+                </button>
+                <button type="button" onclick="navigateTo('experience')" id="nav-experience" class="nav-btn px-3 py-1 bg-black text-neutral-400 hover:text-white transition-all">
+                    [2] ./experience.log
+                </button>
+                <button type="button" onclick="navigateTo('projects')" id="nav-projects" class="nav-btn px-3 py-1 bg-black text-neutral-400 hover:text-white transition-all">
+                    [3] ./projects.exe
+                </button>
+            </nav>
+        </div>
+
+        <!-- ASCII Frame Bottom Line -->
+        <div class="max-w-6xl mx-auto px-4 text-neutral-800 text-xs overflow-hidden select-none bg-black">
+            +================================================================================================================================================+
+        </div>
+    </header>
+
+
+    <!-- MAIN TERMINAL SCREEN -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-6 sm:py-8 space-y-8 relative z-10">
+
+        <!-- ASCII ART HEADER BANNER (FLUID RESPONSIVE SCALING) -->
+        <div class="w-full flex justify-center text-termgreen font-mono select-none py-2 overflow-hidden">
+<pre class="font-mono ascii-banner-pre text-center">
+###############################################################################
+# █████╗ ███████╗██╗  ██╗ █████╗ ██████╗                                      #
+#██╔══██╗██╔════╝██║  ██║██╔══██╗██╔══██╗                                     #
+#███████║███████╗███████║███████║██████╔╝                                     #
+#██╔══██║╚════██║██╔══██║██╔══██║██╔══██╗                                     #
+#██║  ██║███████║██║  ██║██║  ██║██████╔╝                                     #
+#╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝                                      #
+#                                                                             #
+# █████╗ ██╗  ██╗███████╗ █████╗ ███╗   ██╗                                   #
+#██╔══██╗██║  ██║██╔════╝██╔══██╗████╗  ██║                                   #
+#███████║███████║███████╗███████║██╔██╗ ██║                                   #
+#██╔══██║██╔══██║╚════██║██╔══██║██║╚██╗██║                                   #
+#██║  ██║██║  ██║███████║██║  ██║██║ ╚████║                                   #
+#╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝                                   #
+#                                                                             #
+# ██████╗██╗  ██╗ ██████╗ ██╗    ██╗██████╗ ██╗  ██╗██╗   ██╗██████╗ ██╗   ██╗#
+#██╔════╝██║  ██║██╔═══██╗██║    ██║██╔══██╗██║  ██║██║   ██║██╔══██╗╚██╗ ██╔╝#
+#██║     ███████║██║   ██║██║ █╗ ██║██║  ██║███████║██║   ██║██████╔╝ ╚████╔╝ #
+#██║     ██╔══██║██║   ██║██║███╗██║██║  ██║██╔══██║██║   ██║██╔══██╗  ╚██╔╝  #
+#╚██████╗██║  ██║╚██████╔╝╚███╔███╔╝██████╔╝██║  ██║╚██████╔╝██║  ██║   ██║   #
+# ╚═════╝╚═╝  ╚═╝ ╚═════╝  ╚══╝╚══╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝   #
+###############################################################################
+</pre>
+        </div>
+
+
+        <!-- ================= HOME / ABOUT PAGE ================= -->
+        <section id="page-home" class="page-view active space-y-8">
+
+            <!-- CLI Command Prompt -->
+            <div class="flex items-center gap-2 text-sm text-neutral-400">
+                <span class="text-termgreen">ashab@dalhousie:~$</span>
+                <span class="text-white">whoami --verbose</span>
+                <span class="w-2.5 h-4 bg-termgreen inline-block cursor-blink"></span>
+            </div>
+
+            <!-- TUI Main Card Box (ASCII Border Framed) -->
+            <div class="bg-black text-neutral-300 relative">
+                <div class="ascii-border-line text-termgreen text-xs select-none">
+                    ╔═[ USER_PROFILE: ASHAB AHSAN CHOWDHURY ]══════════════════════════════════════════════════════════════════════════════════╗
+                </div>
+                <div class="p-4 sm:p-6 space-y-6 relative border-l border-r border-neutral-800">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center border-b border-neutral-900 pb-4 gap-4">
+                        <div>
+                            <span class="text-xs font-mono text-termamber">[STATUS: ACTIVE_DEVELOPER]</span>
+                            <h1 class="text-2xl sm:text-4xl font-extrabold text-white mt-1">ASHAB AHSAN CHOWDHURY</h1>
+                            <p class="text-termgreen text-sm sm:text-base mt-1">
+                                &gt; Computer Science Graduate @ Dalhousie University | Systems &amp; ML Developer
+                            </p>
+                        </div>
+                        <div class="text-left md:text-right font-mono text-xs text-neutral-400 space-y-1">
+                            <div>LOCATION: Halifax, NS, Canada</div>
+                            <div>DEGREE:   B.Sc Computer Science</div>
+                            <div>PRIMARY:  C, x86-64, PyTorch, Java</div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 text-sm sm:text-base leading-relaxed text-neutral-300">
+                        <div class="ascii-border-line text-termcyan text-xs select-none">
+                            ╔═[ BIOGRAPHY_LOG ]═══════════════════════════════════════════════════════════════════════════════════════════════╗
+                        </div>
+                        <p class="px-4 py-2 text-neutral-300 bg-black border-l border-r border-neutral-900">
+                            Passionate software developer and former Teaching Assistant / Marker at Dalhousie University. Specialized in low-level systems programming (manual memory allocation, pointer debugging, x86-64 CPU registers), deep learning model architecture from scratch (PyTorch / NumPy), and enterprise full-stack development (Spring Boot, React, AWS cloud infrastructure).
+                        </p>
+                        <div class="ascii-border-line text-termcyan text-xs select-none">
+                            ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+                        </div>
+                    </div>
+
+                    <!-- Navigation Quick Keys -->
+                    <div class="pt-2 flex flex-wrap gap-4">
+                        <button onclick="navigateTo('experience')" class="px-4 py-2 border border-termgreen text-termgreen hover:bg-termgreen hover:text-black transition-all font-bold text-xs sm:text-sm">
+                            [EXECUTE: ./experience.log &gt;&gt;]
+                        </button>
+                        <button onclick="navigateTo('projects')" class="px-4 py-2 border border-termcyan text-termcyan hover:bg-termcyan hover:text-black transition-all font-bold text-xs sm:text-sm">
+                            [EXECUTE: ./projects.exe &gt;&gt;]
+                        </button>
+                    </div>
+                </div>
+                <div class="ascii-border-line text-termgreen text-xs select-none">
+                    ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+                </div>
+            </div>
+
+            <!-- ASCII TECHNICAL SKILLS MATRIX (ASCII Border Framed) -->
+            <div class="bg-black text-neutral-300 relative">
+                <div class="ascii-border-line text-termgreen text-xs select-none">
+                    ╔═[ SYSTEM_CAPABILITIES_MATRIX ]══════════════════════════════════════════════════════════════════════════════════════════╗
+                </div>
+
+                <div class="p-4 sm:p-6 border-l border-r border-neutral-800 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+                    <div class="p-3 bg-neutral-950 border border-neutral-800">
+                        <div class="text-termcyan font-bold mb-1">[SYSTEMS_&amp;_LOW_LEVEL]</div>
+                        <div class="text-neutral-300">C Language, x86-64 Assembly, Memory Management, Pointer Logic, CPU Registers, Bitwise Ops</div>
+                    </div>
+
+                    <div class="p-3 bg-neutral-950 border border-neutral-800">
+                        <div class="text-termcyan font-bold mb-1">[AI_&amp;_DEEP_LEARNING]</div>
+                        <div class="text-neutral-300">PyTorch, NumPy, Transformer Architecture, Vectorized Softmax, NLL Loss, Subword-NMT, NLTK</div>
+                    </div>
+
+                    <div class="p-3 bg-neutral-950 border border-neutral-800">
+                        <div class="text-termcyan font-bold mb-1">[BACKEND_&amp;_CLOUD]</div>
+                        <div class="text-neutral-300">Java, Spring Boot, Python (Flask), AWS (S3, DynamoDB, Textract), RESTful APIs, Maven</div>
+                    </div>
+
+                    <div class="p-3 bg-neutral-950 border border-neutral-800">
+                        <div class="text-termcyan font-bold mb-1">[FRONTEND_&amp;_TOOLS]</div>
+                        <div class="text-neutral-300">React, JavaScript, HTML5/CSS3, Git, GitLab CI/CD, Automated Bash Scripting</div>
+                    </div>
+                </div>
+
+                <div class="ascii-border-line text-termgreen text-xs select-none">
+                    ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= EXPERIENCE PAGE ================= -->
+        <section id="page-experience" class="page-view space-y-8">
+
+            <!-- CLI Command Prompt -->
+            <div class="flex items-center gap-2 text-sm text-neutral-400">
+                <span class="text-termgreen">ashab@dalhousie:~$</span>
+                <span class="text-white">cat /var/log/experience.log</span>
+                <span class="w-2.5 h-4 bg-termgreen inline-block cursor-blink"></span>
+            </div>
+
+            <!-- EXPERIENCE ENTRY 1: Teaching Assistant -->
+            <div class="bg-black relative space-y-0">
+                <div class="ascii-border-line text-termcyan text-xs select-none">
+                    ╔═[ ROLE_01: TEACHING ASSISTANT ]═════════════════════════════════════════════════════════════════════════════════════════╗
+                </div>
+                <div class="p-4 sm:p-6 space-y-6 border-l border-r border-neutral-800">
+                    <!-- Header -->
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center border-b border-neutral-900 pb-3 gap-2">
+                        <div>
+                            <h2 class="text-xl sm:text-2xl font-bold text-white">Teaching Assistant</h2>
+                            <div class="text-xs text-neutral-400 mt-0.5">Dalhousie University | Halifax, NS</div>
+                        </div>
+                        <div class="text-xs font-mono px-3 py-1 border border-termgreen text-termgreen bg-black self-start sm:self-auto">
+                            [ Jan 2024 – December 2026 ]
+                        </div>
+                    </div>
+
+                    <!-- Consolidated Paragraph -->
+                    <div class="space-y-2 text-sm leading-relaxed text-neutral-300">
+                        <div class="text-xs text-termamber font-bold">&gt; DETAILED_NARRATIVE_LOG:</div>
+                        <p class="p-4 border border-neutral-900 bg-neutral-950 rounded-sm text-neutral-200">
+                            Mentored 120+ students on manual memory management in C by diagnosing pointer faults, allocation errors and memory leaks, leading to a 15% increase in bug-free submissions. Demystified x86-64 architecture, CPU registers, and bitwise logic operations by conducting interactive memory trace breakdowns, helping students boost the class average by 20%. Evaluated 60+ weekly systems programming assignments, maintaining a strict 24 hour grading turnaround while resolving 90% technical forum inquiries.
+                        </p>
+                    </div>
+
+                    <!-- ASCII Metrics Table -->
+                    <div class="font-mono text-xs text-neutral-400 overflow-x-auto">
+                        <pre class="text-termgreen">
+┌──────────────────────┬──────────────────────┬──────────────────────┬──────────────────────┐
+│ STUDENTS MENTORED    │ BUG-FREE SUBMISSIONS │ CLASS AVG BOOST      │ FORUM INQUIRIES      │
+├──────────────────────┼──────────────────────┼──────────────────────┼──────────────────────┤
+│ 120+ Students        │ +15% Increase        │ +20% Class Boost     │ 90% Resolved         │
+└──────────────────────┴──────────────────────┴──────────────────────┴──────────────────────┘
+                        </pre>
+                    </div>
+                </div>
+                <div class="ascii-border-line text-termcyan text-xs select-none">
+                    ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+                </div>
+            </div>
+
+            <!-- EXPERIENCE ENTRY 2: Marker -->
+            <div class="bg-black relative space-y-0">
+                <div class="ascii-border-line text-termcyan text-xs select-none">
+                    ╔═[ ROLE_02: COURSE MARKER ]══════════════════════════════════════════════════════════════════════════════════════════════╗
+                </div>
+                <div class="p-4 sm:p-6 space-y-6 border-l border-r border-neutral-800">
+                    <!-- Header -->
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center border-b border-neutral-900 pb-3 gap-2">
+                        <div>
+                            <h2 class="text-xl sm:text-2xl font-bold text-white">Course Marker</h2>
+                            <div class="text-xs text-neutral-400 mt-0.5">Dalhousie University | Halifax, NS</div>
+                        </div>
+                        <div class="text-xs font-mono px-3 py-1 border border-termgreen text-termgreen bg-black self-start sm:self-auto">
+                            [ Jan 2023 – December 2026 ]
+                        </div>
+                    </div>
+
+                    <!-- Consolidated Paragraph -->
+                    <div class="space-y-2 text-sm leading-relaxed text-neutral-300">
+                        <div class="text-xs text-termamber font-bold">&gt; DETAILED_NARRATIVE_LOG:</div>
+                        <p class="p-4 border border-neutral-900 bg-neutral-950 rounded-sm text-neutral-200">
+                            Analyzed 300+ students paper to give constructive feedback for Assignments and labs on Gitlab through an automated bash script. Provided detailed personalized feedback test results across 3 courses each with 100+ students. Coordinated with professors and teaching assistants to communicate critical changes in grading schemes to 100+ students across 3, 2000+ level courses.
+                        </p>
+                    </div>
+
+                    <!-- ASCII Metrics Table -->
+                    <div class="font-mono text-xs text-neutral-400 overflow-x-auto">
+                        <pre class="text-termgreen">
+┌──────────────────────────────┬──────────────────────────────┬──────────────────────────────┐
+│ PAPERS &amp; LABS ANALYZED       │ COURSES HANDLED              │ AUTOMATION TOOL              │
+├──────────────────────────────┼──────────────────────────────┼──────────────────────────────┤
+│ 300+ Student Submissions     │ 3 Courses (100+ Students)    │ Automated GitLab Bash Script │
+└──────────────────────────────┴──────────────────────────────┴──────────────────────────────┘
+                        </pre>
+                    </div>
+                </div>
+                <div class="ascii-border-line text-termcyan text-xs select-none">
+                    ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- ================= PROJECTS PAGE ================= -->
+        <section id="page-projects" class="page-view space-y-8">
+
+            <!-- CLI Command Prompt -->
+            <div class="flex items-center gap-2 text-sm text-neutral-400">
+                <span class="text-termgreen">ashab@dalhousie:~$</span>
+                <span class="text-white">./list_projects.py --all</span>
+                <span class="w-2.5 h-4 bg-termgreen inline-block cursor-blink"></span>
+            </div>
+
+            <!-- PROJECT 1: GPT From Scratch -->
+            <a href="https://github.com/AestheticSauce/miniGPT" target="_blank" rel="noopener noreferrer" class="block bg-black relative space-y-0 group cursor-pointer transition-all">
+                <div class="ascii-border-line text-neutral-600 group-hover:text-termgreen text-xs select-none transition-colors">
+                    ###[ PROJECT_01: GPT FROM SCRATCH ]######################################################################################
+                </div>
+                <div class="p-4 sm:p-6 space-y-6 border-l border-r border-neutral-800 group-hover:border-termgreen transition-colors">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center border-b border-neutral-900 group-hover:border-neutral-800 pb-3 gap-2">
+                        <div>
+                            <h2 class="text-xl sm:text-2xl font-bold text-white group-hover:text-termgreen transition-colors">GPT From Scratch</h2>
+                            <div class="text-xs text-neutral-400 mt-0.5">Dalhousie University | Halifax, NS • Feb 2026 – Mar 2026</div>
+                        </div>
+                        <div class="flex flex-wrap gap-1 font-mono text-xs">
+                            <span class="px-2 py-0.5 border border-termgreen text-termgreen bg-black">[Python]</span>
+                            <span class="px-2 py-0.5 border border-termgreen text-termgreen bg-black">[PyTorch]</span>
+                            <span class="px-2 py-0.5 border border-termgreen text-termgreen bg-black">[NumPy]</span>
+                            <span class="px-2 py-0.5 border border-neutral-700 text-neutral-400 bg-black">[Neural Nets]</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 text-sm leading-relaxed text-neutral-300">
+                        <div class="text-xs text-termamber font-bold">&gt; PROJECT_DESCRIPTION_LOG:</div>
+                        <p class="p-4 border border-neutral-900 bg-neutral-950 rounded-sm text-neutral-200">
+                            Designed and engineered a decoder-only Transformer (GPT) model from scratch using PyTorch, establishing the foundational building blocks for a generative language model. Developed modular neural network components from scratch using NumPy, implementing a vectorized Softmax layer and a Negative Log Likelihood Loss module complete with custom forward and backward propagation passes. Architected and implemented a Multihead-Self Attention block by building a custom Causal Self-Attention layer utilizing lower triangular masking to enforce the strict autoregressive property. Built robust data-preparation pipelines leveraging the subword-nmt package and NLTK to tokenize textual assets, construct an exhaustive subword vocabulary, and map raw inputs into training matrix configurations.
+                        </p>
+                    </div>
+                </div>
+                <div class="ascii-border-line text-neutral-600 group-hover:text-termgreen text-xs select-none transition-colors">
+                    ################################################################################################################========
+                </div>
+            </a>
+
+            <!-- PROJECT 2: MockBook -->
+            <a href="https://github.com/AestheticSauce/mockBook" target="_blank" rel="noopener noreferrer" class="block bg-black relative space-y-0 group cursor-pointer transition-all">
+                <div class="ascii-border-line text-neutral-600 group-hover:text-termgreen text-xs select-none transition-colors">
+                    ###[ PROJECT_02: MOCKBOOK ]################################################################################==============
+                </div>
+                <div class="p-4 sm:p-6 space-y-6 border-l border-r border-neutral-800 group-hover:border-termgreen transition-colors">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center border-b border-neutral-900 group-hover:border-neutral-800 pb-3 gap-2">
+                        <div>
+                            <h2 class="text-xl sm:text-2xl font-bold text-white group-hover:text-termgreen transition-colors">MockBook</h2>
+                            <div class="text-xs text-neutral-400 mt-0.5">Dalhousie University | Halifax, NS • May 2024 – Aug 2024</div>
+                        </div>
+                        <div class="flex flex-wrap gap-1 font-mono text-xs">
+                            <span class="px-2 py-0.5 border border-termgreen text-termgreen bg-black">[React]</span>
+                            <span class="px-2 py-0.5 border border-termgreen text-termgreen bg-black">[Java]</span>
+                            <span class="px-2 py-0.5 border border-termgreen text-termgreen bg-black">[Spring Boot]</span>
+                            <span class="px-2 py-0.5 border border-neutral-700 text-neutral-400 bg-black">[REST APIs]</span>
+                            <span class="px-2 py-0.5 border border-neutral-700 text-neutral-400 bg-black">[CI/CD]</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 text-sm leading-relaxed text-neutral-300">
+                        <div class="text-xs text-termamber font-bold">&gt; PROJECT_DESCRIPTION_LOG:</div>
+                        <p class="p-4 border border-neutral-900 bg-neutral-950 rounded-sm text-neutral-200">
+                            Designed and engineered a full-stack social networking platform, utilizing a modular Spring Boot backend architecture seamlessly integrated with a responsive React frontend layout. Architected and deployed a robust RESTful API ecosystem facilitating secure CRUD workflows for user data, asset management, and comprehensive payload validation. Constructed relational data models and first-draft ERDs to support advanced core features, including multi-tier user registration, secure login authentication, and password reset protocols. Authored thorough test suites for unit and repository validation to guarantee application runtime stability and eliminate regression errors.
+                        </p>
+                    </div>
+                </div>
+                <div class="ascii-border-line text-neutral-600 group-hover:text-termgreen text-xs select-none transition-colors">
+                    ################################################################################################################========
+                </div>
+            </a>
+
+            <!-- PROJECT 3: AI-Powered Expense Tracker -->
+            <a href="https://github.com/AestheticSauce/smart-reciepts" target="_blank" rel="noopener noreferrer" class="block bg-black relative space-y-0 group cursor-pointer transition-all">
+                <div class="ascii-border-line text-neutral-600 group-hover:text-termgreen text-xs select-none transition-colors">
+                    ###[ PROJECT_03: AI-POWERED EXPENSE TRACKER ]############################################################################
+                </div>
+                <div class="p-4 sm:p-6 space-y-6 border-l border-r border-neutral-800 group-hover:border-termgreen transition-colors">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center border-b border-neutral-900 group-hover:border-neutral-800 pb-3 gap-2">
+                        <div>
+                            <h2 class="text-xl sm:text-2xl font-bold text-white group-hover:text-termgreen transition-colors">AI-Powered Expense Tracker</h2>
+                            <div class="text-xs text-neutral-400 mt-0.5">Academic Project | Halifax, NS • Jan 2024 – Jan 2024</div>
+                        </div>
+                        <div class="flex flex-wrap gap-1 font-mono text-xs">
+                            <span class="px-2 py-0.5 border border-termgreen text-termgreen bg-black">[Python Flask]</span>
+                            <span class="px-2 py-0.5 border border-termgreen text-termgreen bg-black">[React]</span>
+                            <span class="px-2 py-0.5 border border-termgreen text-termgreen bg-black">[AWS S3]</span>
+                            <span class="px-2 py-0.5 border border-neutral-700 text-neutral-400 bg-black">[DynamoDB]</span>
+                            <span class="px-2 py-0.5 border border-neutral-700 text-neutral-400 bg-black">[Textract]</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 text-sm leading-relaxed text-neutral-300">
+                        <div class="text-xs text-termamber font-bold">&gt; PROJECT_DESCRIPTION_LOG:</div>
+                        <p class="p-4 border border-neutral-900 bg-neutral-950 rounded-sm text-neutral-200">
+                            Developed, and deployed a full-stack application utilizing a Python (Flask) backend and a responsive React graphical user interface. Architected secure AWS S3 storage infrastructure using CloudFormation, implementing strict public access blocks and managing storage policies to comply with data governance and security standards. Integrated custom applications with RESTful APIs and cloud-based services, utilizing AWS Textract to automate document analysis and dynamically mapping results into a DynamoDB database. Developed and maintained secure data pipelines, ensuring application reliability, performance, and safe handling of user uploads via pre-signed S3 URLs.
+                        </p>
+                    </div>
+                </div>
+                <div class="ascii-border-line text-neutral-600 group-hover:text-termgreen text-xs select-none transition-colors">
+                    ################################################################################################################========
+                </div>
+            </a>
+
+        </section>
+
+    </main>
+
+
+    <!-- TERMINAL FOOTER STATUS BAR (ASCII FRAMED) -->
+    <footer class="bg-black relative z-10">
+        <div class="max-w-6xl mx-auto px-4 text-neutral-800 text-xs overflow-hidden select-none">
+            +================================================================================================================================================+
+        </div>
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-neutral-500">
+            <div>
+                [EOF] Ashab Ahsan Chowdhury | Dalhousie University
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="mailto:ashab@dal.ca" class="hover:text-termgreen transition-colors">[EMAIL]</a>
+                <a href="https://github.com" target="_blank" rel="noopener" class="hover:text-termgreen transition-colors">[GITHUB]</a>
+                <a href="https://linkedin.com" target="_blank" rel="noopener" class="hover:text-termgreen transition-colors">[LINKEDIN]</a>
+            </div>
+        </div>
+        <div class="max-w-6xl mx-auto px-4 pb-2 text-neutral-800 text-xs overflow-hidden select-none">
+            +================================================================================================================================================+
+        </div>
+    </footer>
+
+    <!-- INTERACTIVE CLI NAVIGATION & SHORTCUT SCRIPT -->
+    <script>
+        function navigateTo(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page-view');
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Show target page
+            const activePage = document.getElementById('page-' + pageId);
+            if (activePage) {
+                activePage.classList.add('active');
+            }
+
+            // Reset navigation button active styling
+            const navButtons = document.querySelectorAll('.nav-btn');
+            navButtons.forEach(btn => {
+                btn.classList.remove('text-termgreen', 'font-bold');
+                btn.classList.add('text-neutral-400');
+            });
+
+            // Set current nav button styling
+            const currentNavBtn = document.getElementById('nav-' + pageId);
+            if (currentNavBtn) {
+                currentNavBtn.classList.remove('text-neutral-400');
+                currentNavBtn.classList.add('text-termgreen', 'font-bold');
+            }
+
+            // Update terminal path status in header
+            const breadcrumb = document.getElementById('term-breadcrumb');
+            if (breadcrumb) {
+                const paths = {
+                    'home': 'root@portfolio:~ (tty1)',
+                    'experience': 'root@portfolio:~/experience.log (tty1)',
+                    'projects': 'root@portfolio:~/projects.exe (tty1)'
+                };
+                breadcrumb.textContent = paths[pageId] || 'root@portfolio:~ (tty1)';
+            }
+
+            // Smooth scroll to top of page
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Global Keyboard navigation shortcuts (1, 2, 3)
+        document.addEventListener('keydown', (e) => {
+            // Ignore keypresses inside text inputs or textareas if any
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+
+            if (e.key === '1') {
+                e.preventDefault();
+                navigateTo('home');
+            } else if (e.key === '2') {
+                e.preventDefault();
+                navigateTo('experience');
+            } else if (e.key === '3') {
+                e.preventDefault();
+                navigateTo('projects');
+            }
+        });
+
+        // Initialize state on DOM ready
+        document.addEventListener('DOMContentLoaded', () => {
+            navigateTo('home');
+        });
+    </script>
+</body>
+</html>
