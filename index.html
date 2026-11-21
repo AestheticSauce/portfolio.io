@@ -46,6 +46,18 @@
         .cursor-blink {
             animation: blink 1s step-end infinite;
         }
+
+        /* CLI prompt line: inline flow so long commands wrap and the cursor follows the last word */
+        .cli-prompt {
+            display: block;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+        .cli-prompt .cursor-blink {
+            display: inline-block;
+            vertical-align: text-bottom;
+            margin-left: 0.5rem;
+        }
         @keyframes blink {
             0%, 100% { opacity: 1; }
             50% { opacity: 0; }
@@ -186,7 +198,7 @@
         <section id="page-home" class="page-view active space-y-8">
 
             <!-- CLI Command Prompt -->
-            <div class="flex items-center gap-2 text-sm text-neutral-400">
+            <div class="cli-prompt text-sm text-neutral-400">
                 <span class="text-termgreen">ashab@dalhousie:~$</span>
                 <span class="text-white">whoami --verbose</span>
                 <span class="w-2.5 h-4 bg-termgreen inline-block cursor-blink"></span>
@@ -279,7 +291,7 @@
         <section id="page-experience" class="page-view space-y-8">
 
             <!-- CLI Command Prompt -->
-            <div class="flex items-center gap-2 text-sm text-neutral-400">
+            <div class="cli-prompt text-sm text-neutral-400">
                 <span class="text-termgreen">ashab@dalhousie:~$</span>
                 <span class="text-white">cat /var/log/experience.log</span>
                 <span class="w-2.5 h-4 bg-termgreen inline-block cursor-blink"></span>
@@ -374,7 +386,7 @@
         <section id="page-projects" class="page-view space-y-8">
 
             <!-- CLI Command Prompt -->
-            <div class="flex items-center gap-2 text-sm text-neutral-400">
+            <div class="cli-prompt text-sm text-neutral-400">
                 <span class="text-termgreen">ashab@dalhousie:~$</span>
                 <span class="text-white">./list_projects.py --all</span>
                 <span class="w-2.5 h-4 bg-termgreen inline-block cursor-blink"></span>
